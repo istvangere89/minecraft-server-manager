@@ -7,8 +7,9 @@ import os
 import re
 import shutil
 import subprocess
+import threading
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Optional, Callable
 
 
 class ServerManager:
@@ -26,6 +27,9 @@ class ServerManager:
         """
         self.server_directory = Path(server_directory)
         self.server_properties = self.server_directory / "server.properties"
+        self.server_process = None
+        self.is_running = False
+        self.output_callback = None
     
     def validate_server_directory(self) -> Tuple[bool, str]:
         """
@@ -131,6 +135,84 @@ class ServerManager:
             return True, "Server started in new window"
         except Exception as e:
             return False, f"Failed to start server: {str(e)}"
+    
+    def start_server_embedded(self, output_callback: Optional[Callable[[str], None]] = None) -> Tuple[bool, str]:
+        """
+        Start the Bedrock server with output capture for embedded terminal.
+        Server runs in background thread, output is sent to callback.
+        
+        Args:
+            output_callback: Callback function to receive output lines
+            
+        Returns:
+            Tuple of (success, message)
+        """
+        if self.is_running:
+            return False, "Server is already running"
+        
+        try:
+            self.output_callback = output_callback
+            
+            # Start server process with output capture
+            self.server_process = subprocess.Popen(
+                'bedrock_server.exe',
+                cwd=str(self.server_directory),
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                text=True,
+                bufsize=1  # Line buffered
+            )
+            
+            self.is_running = True
+            
+            # Start a thread to read output
+            output_thread = threading.Thread(
+                target=self._read_server_output,
+                daemon=True
+            )
+            output_thread.start()
+            
+            return True, "Server started in embedded terminal"
+        except Exception as e:
+            self.is_running = False
+            return False, f"Failed to start server: {str(e)}"
+    
+    def _read_server_output(self):
+        """Read server output line by line and pass to callback."""
+        if not self.server_process:
+            return
+        
+        try:
+            for line in self.server_process.stdout:
+                if self.output_callback:
+                    self.output_callback(line.rstrip('\n'))
+        except Exception as e:
+            if self.output_callback:
+                self.output_callback(f"Error reading output: {str(e)}")
+        finally:
+            self.is_running = False
+    
+    def stop_server(self) -> Tuple[bool, str]:
+        """
+        Stop the running server process.
+        
+        Returns:
+            Tuple of (success, message)
+        """
+        if not self.is_running or not self.server_process:
+            return False, "Server is not running"
+        
+        try:
+            self.server_process.terminate()
+            try:
+                self.server_process.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                self.server_process.kill()
+            
+            self.is_running = False
+            return True, "Server stopped"
+        except Exception as e:
+            return False, f"Failed to stop server: {str(e)}"
     
     def config_exists(self, config_file: str) -> bool:
         """

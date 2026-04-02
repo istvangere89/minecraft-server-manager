@@ -5,7 +5,7 @@ Main application window for the Minecraft Server Manager.
 from PyQt5.QtWidgets import (
     QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
     QListWidget, QListWidgetItem, QPushButton, QLabel,
-    QMessageBox, QFileDialog
+    QMessageBox, QFileDialog, QSplitter
 )
 from PyQt5.QtCore import Qt, QTimer
 
@@ -15,6 +15,7 @@ from password_manager import verify_password
 from ui.dialogs import (
     PasswordSetupDialog, PasswordPromptDialog, DirectorySelectDialog
 )
+from ui.terminal_widget import TerminalWidget
 
 
 class MainWindow(QMainWindow):
@@ -24,7 +25,7 @@ class MainWindow(QMainWindow):
         """Initialize main window."""
         super().__init__()
         self.setWindowTitle("Minecraft Server Manager")
-        self.setGeometry(100, 100, 600, 500)
+        self.setGeometry(100, 100, 900, 600)
         
         # Initialize managers
         self.config = ConfigManager()
@@ -50,21 +51,23 @@ class MainWindow(QMainWindow):
         title = QLabel("Select a Server Configuration:")
         main_layout.addWidget(title)
         
-        # Config list
+        # Create splitter for config list and terminal
+        splitter = QSplitter(Qt.Horizontal)
+        
+        # Left panel: Config list
+        left_widget = QWidget()
+        left_layout = QVBoxLayout()
+        
         self.config_list = QListWidget()
         self.config_list.itemDoubleClicked.connect(self._on_config_selected)
-        main_layout.addWidget(self.config_list)
+        left_layout.addWidget(self.config_list)
         
-        # Buttons layout
+        # Buttons for config management
         button_layout = QHBoxLayout()
         
         refresh_btn = QPushButton("Refresh")
         refresh_btn.clicked.connect(self._load_configs)
         button_layout.addWidget(refresh_btn)
-        
-        start_btn = QPushButton("Select & Start")
-        start_btn.clicked.connect(self._on_start_clicked)
-        button_layout.addWidget(start_btn)
         
         manage_btn = QPushButton("Manage Passwords")
         manage_btn.clicked.connect(self._on_manage_passwords)
@@ -74,7 +77,38 @@ class MainWindow(QMainWindow):
         config_btn.clicked.connect(self._on_change_directory)
         button_layout.addWidget(config_btn)
         
-        main_layout.addLayout(button_layout)
+        left_layout.addLayout(button_layout)
+        left_widget.setLayout(left_layout)
+        
+        # Right panel: Terminal
+        right_widget = QWidget()
+        right_layout = QVBoxLayout()
+        
+        # Terminal widget
+        self.terminal = TerminalWidget()
+        right_layout.addWidget(self.terminal)
+        
+        # Server control buttons
+        control_layout = QHBoxLayout()
+        
+        start_btn = QPushButton("Start Server")
+        start_btn.clicked.connect(self._on_start_server)
+        control_layout.addWidget(start_btn)
+        
+        stop_btn = QPushButton("Stop Server")
+        stop_btn.clicked.connect(self._on_stop_server)
+        control_layout.addWidget(stop_btn)
+        
+        right_layout.addLayout(control_layout)
+        right_widget.setLayout(right_layout)
+        
+        # Add both to splitter
+        splitter.addWidget(left_widget)
+        splitter.addWidget(right_widget)
+        splitter.setStretchFactor(0, 1)
+        splitter.setStretchFactor(1, 1)
+        
+        main_layout.addWidget(splitter)
         
         # Status bar
         self.status_label = QLabel("Ready")
@@ -194,10 +228,6 @@ class MainWindow(QMainWindow):
     
     def _on_config_selected(self):
         """Handle config selection from list double-click."""
-        self._on_start_clicked()
-    
-    def _on_start_clicked(self):
-        """Handle start button click."""
         current_item = self.config_list.currentItem()
         
         if not current_item:
@@ -226,33 +256,73 @@ class MainWindow(QMainWindow):
         # Copy config and start server
         self._start_server_with_config(config_file)
     
-    def _start_server_with_config(self, config_file: str):
-        """
-        Copy config to server.properties and start the server.
+    def _on_start_server(self):
+        """Handle start server button click - uses embedded terminal."""
+        current_item = self.config_list.currentItem()
         
-        Args:
-            config_file: Name of the config file to use
-        """
-        try:
-            # Copy config
-            success, message = self.server_manager.copy_config_to_active(config_file)
-            if not success:
-                QMessageBox.critical(self, "Error", message)
-                self._update_status(f"Error: {message}")
+        if not current_item:
+            QMessageBox.warning(self, "Select a Configuration", "Please select a configuration first")
+            return
+        
+        config_file = current_item.data(Qt.UserRole)
+        world_name = current_item.text().replace(" 🔒", "")
+        
+        # Check if password protected
+        if self.config.is_config_protected(config_file):
+            password_hash = self.config.get_password_hash_for_config(config_file)
+            
+            # Show password prompt
+            pwd_dialog = PasswordPromptDialog(self, config_file)
+            if pwd_dialog.exec_() != PasswordPromptDialog.Accepted:
+                self._update_status("Cancelled")
                 return
             
-            # Start server
-            success, message = self.server_manager.start_server()
-            if not success:
-                QMessageBox.critical(self, "Error", message)
-                self._update_status(f"Error: {message}")
+            # Verify password
+            entered_password = pwd_dialog.get_password()
+            if not verify_password(entered_password, password_hash):
+                QMessageBox.critical(self, "Wrong Password", "The password you entered is incorrect")
+                self._update_status("Wrong password entered")
                 return
-            
-            self._update_status(f"Server started with {config_file}")
-        except Exception as e:
-            error_msg = str(e)
-            QMessageBox.critical(self, "Error", f"Failed to start server: {error_msg}")
-            self._update_status(f"Error: {error_msg}")
+        
+        # Copy config
+        success, message = self.server_manager.copy_config_to_active(config_file)
+        if not success:
+            QMessageBox.critical(self, "Error", message)
+            self._update_status(f"Error: {message}")
+            return
+        
+        # Clear terminal
+        self.terminal.clear()
+        self.terminal.append_output(f"Starting server with configuration: {world_name}")
+        self.terminal.append_output("=" * 60)
+        
+        # Start server with embedded terminal
+        success, message = self.server_manager.start_server_embedded(
+            output_callback=self.terminal.append_output
+        )
+        
+        if not success:
+            QMessageBox.critical(self, "Error", message)
+            self._update_status(f"Error: {message}")
+            return
+        
+        self._update_status(f"Server running with {world_name}")
+    
+    def _on_stop_server(self):
+        """Handle stop server button click."""
+        if not self.server_manager.is_running:
+            QMessageBox.warning(self, "Server Not Running", "The server is not currently running")
+            return
+        
+        success, message = self.server_manager.stop_server()
+        
+        if success:
+            self.terminal.append_output("=" * 60)
+            self.terminal.append_output(message)
+            self._update_status(message)
+        else:
+            QMessageBox.critical(self, "Error", message)
+            self._update_status(f"Error: {message}")
     
     def _on_manage_passwords(self):
         """Handle manage passwords button click."""
