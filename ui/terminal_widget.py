@@ -26,14 +26,7 @@ class TerminalWidget(QWidget):
         font = QFont("Courier New", 9)
         self.text_display.setFont(font)
         self.text_display.setStyleSheet(
-            """
-            QTextEdit {
-                background-color: #1e1e1e;
-                color: #00ff00;
-                border: 1px solid #333333;
-                padding: 5px;
-            }
-        """
+            "QTextEdit { background-color: #1e1e1e; color: #00ff00;" "border: 1px solid #333333; padding: 5px; }"
         )
 
         layout.addWidget(self.text_display)
