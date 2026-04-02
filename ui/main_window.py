@@ -371,3 +371,43 @@ class MainWindow(QMainWindow):
             message: Status message to display
         """
         self.status_label.setText(message)
+    
+    def closeEvent(self, event):
+        """
+        Handle window close event.
+        Warns user if server is running and offers options.
+        
+        Args:
+            event: Close event
+        """
+        if self.server_manager and self.server_manager.is_running:
+            # Server is running - ask what to do
+            reply = QMessageBox(self)
+            reply.setWindowTitle("Server Running")
+            reply.setText("The server is still running. What would you like to do?")
+            reply.setIcon(QMessageBox.Warning)
+            
+            keep_btn = reply.addButton("Keep Running", QMessageBox.AcceptRole)
+            stop_btn = reply.addButton("Stop Server", QMessageBox.DestructiveRole)
+            cancel_btn = reply.addButton("Cancel", QMessageBox.RejectRole)
+            
+            reply.exec_()
+            
+            if reply.clickedButton() == cancel_btn:
+                # Cancel close
+                event.ignore()
+                return
+            elif reply.clickedButton() == stop_btn:
+                # Stop server and close
+                self.server_manager.stop_server()
+                self.terminal.append_output("=" * 60)
+                self.terminal.append_output("Server stopped. Closing application.")
+                event.accept()
+            else:
+                # Keep running and close (default)
+                self.terminal.append_output("=" * 60)
+                self.terminal.append_output("Application closed. Server continues running.")
+                event.accept()
+        else:
+            # Server not running - just close
+            event.accept()
