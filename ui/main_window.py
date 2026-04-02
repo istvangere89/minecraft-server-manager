@@ -10,13 +10,13 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtCore import Qt, QTimer, QSize
 from PyQt5.QtGui import QFont, QFontMetrics
 
-from config import ConfigManager
-from server_manager import ServerManager
-from password_manager import verify_password
-from ui.dialogs import (
+from ..config import ConfigManager
+from ..server_manager import ServerManager
+from ..password_manager import verify_password
+from .dialogs import (
     PasswordSetupDialog, PasswordPromptDialog, DirectorySelectDialog
 )
-from ui.terminal_widget import TerminalWidget
+from .terminal_widget import TerminalWidget
 
 
 class MainWindow(QMainWindow):

@@ -10,7 +10,7 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtCore import Qt
 
-from password_manager import hash_password, verify_password
+from ..password_manager import hash_password, verify_password
 
 
 class PasswordSetupDialog(QDialog):
