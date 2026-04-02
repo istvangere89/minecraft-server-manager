@@ -8,6 +8,7 @@ import re
 import shutil
 import subprocess
 import threading
+import sys
 from pathlib import Path
 from typing import Dict, List, Tuple, Optional, Callable
 
@@ -140,6 +141,7 @@ class ServerManager:
         """
         Start the Bedrock server with output capture for embedded terminal.
         Server runs in background thread, output is sent to callback.
+        Console window is hidden on Windows.
         
         Args:
             output_callback: Callback function to receive output lines
@@ -153,6 +155,12 @@ class ServerManager:
         try:
             self.output_callback = output_callback
             
+            # Prepare subprocess creation flags to hide console on Windows
+            creationflags = 0
+            if sys.platform == 'win32':
+                # CREATE_NO_WINDOW = 0x08000000 (works on Python 3.7+)
+                creationflags = 0x08000000
+            
             # Start server process with output capture
             self.server_process = subprocess.Popen(
                 'bedrock_server.exe',
@@ -160,7 +168,8 @@ class ServerManager:
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT,
                 text=True,
-                bufsize=1  # Line buffered
+                bufsize=1,  # Line buffered
+                creationflags=creationflags
             )
             
             self.is_running = True
