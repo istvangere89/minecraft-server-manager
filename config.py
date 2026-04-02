@@ -1,10 +1,10 @@
 """
 Configuration management for the Minecraft Server Manager.
-Handles loading and saving app configuration from/to app_config.json.
+Handles loading and saving app configuration from/to minecraft_server_manager_config.json.
 """
 
 import json
-import os
+import sys
 from pathlib import Path
 from typing import Dict, Optional
 
@@ -16,8 +16,29 @@ class ConfigManager:
     
     def __init__(self):
         """Initialize configuration manager."""
-        self.config_path = Path(self.CONFIG_FILE)
+        self.config_path = self._get_config_path()
         self.config = self._load_config()
+    
+    def _get_config_path(self) -> Path:
+        """
+        Get the config file path.
+        Looks in app directory first (where exe is), then current directory.
+        
+        Returns:
+            Path object for config file
+        """
+        # Try app directory first (where the exe is running from)
+        if getattr(sys, 'frozen', False):
+            # Running as PyInstaller exe
+            app_dir = Path(sys.executable).parent
+            config_in_app_dir = app_dir / self.CONFIG_FILE
+            if config_in_app_dir.exists():
+                return config_in_app_dir
+            # Use app directory as default location for new config
+            return config_in_app_dir
+        
+        # Running as Python script - use current directory
+        return Path(self.CONFIG_FILE)
     
     def _load_config(self) -> Dict:
         """

@@ -125,7 +125,11 @@ class MainWindow(QMainWindow):
         """
         server_dir = self.config.get_server_directory()
         
-        if not server_dir:
+        # Debug: Print what we got
+        print(f"[DEBUG] Server directory from config: '{server_dir}'")
+        
+        if not server_dir or server_dir.strip() == "":
+            print("[DEBUG] Server directory is empty, showing setup dialog")
             return False
         
         try:
@@ -134,11 +138,14 @@ class MainWindow(QMainWindow):
             
             if not is_valid:
                 self._update_status(f"Error: {error_msg}")
+                print(f"[DEBUG] Validation failed: {error_msg}")
                 return False
             
+            print("[DEBUG] Server directory validation successful")
             return True
         except Exception as e:
             self._update_status(f"Error: {str(e)}")
+            print(f"[DEBUG] Exception during validation: {str(e)}")
             return False
     
     def _show_directory_setup(self):
