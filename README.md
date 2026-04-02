@@ -1,0 +1,120 @@
+# Minecraft Server Manager Setup Guide
+
+## Overview
+Minecraft Server Manager is a Python-based desktop application (Windows) that helps you manage multiple Bedrock server configurations with password protection.
+
+## Features
+- **List Configurations**: Automatically discovers all `server-*.properties` files with their World names
+- **Password Protection**: Optionally protect configurations with passwords (hashed SHA256)
+- **One-Click Start**: Select a config → copy to `server.properties` → start the server
+- **Configuration Management**: Change server directory, manage passwords
+
+## Initial Setup
+
+### 1. Install Dependencies
+```bash
+pip install -r requirements.txt
+```
+
+### 2. Configure Server Directory
+On first run, the application will prompt you to select your Minecraft Bedrock server directory. Ensure:
+- The directory contains `bedrock_server.exe`
+- You have `server-*.properties` files in the directory (e.g., `server-world1.properties`)
+
+### 3. Set Up Your Server Configurations
+Create config files in your server directory:
+```
+C:\path\to\server\server-world1.properties
+C:\path\to\server\server-world2.properties
+```
+
+Each file should contain:
+```
+level-name=My World
+# ... other server properties
+```
+
+## Running the Application
+
+### Development Mode
+```bash
+python main.py
+```
+
+### Build Standalone Executable
+The app can be packaged as a standalone `.exe` for easy distribution:
+
+```bash
+# First, install PyInstaller
+pip install pyinstaller
+
+# Run build script (Windows)
+build.bat
+
+# Or (Linux/Mac)
+bash build.sh
+```
+
+The executable will be created at: `dist\minecraft_server_manager.exe`
+
+You can then:
+1. Place it on your Desktop
+2. Add a custom Minecraft icon
+3. Run without needing Python installed
+
+## Icon Setup
+Replace `assets/app_icon.ico` with a custom Minecraft-themed icon:
+- Format: `.ico` file (256x256px recommended)
+- The icon will be embedded in the standalone executable
+
+## Configuration Storage
+App settings are saved in `app_config.json`:
+- Server directory path
+- Protected config names and password hashes
+
+Keep this file in the same directory as the executable.
+
+## File Structure
+```
+minecraft-server-manager/
+├── main.py                    # Entry point
+├── config.py                  # Configuration management
+├── password_manager.py        # Password hashing/verification
+├── server_manager.py          # File operations and server control
+├── ui/
+│   ├── __init__.py
+│   ├── main_window.py        # Main UI window
+│   └── dialogs.py            # Password/directory dialogs
+├── assets/
+│   └── app_icon.ico          # Application icon
+├── requirements.txt          # Python dependencies
+├── build.spec                # PyInstaller spec file
+├── build.bat                 # Windows build script
+├── build.sh                  # Linux/Mac build script
+└── README.md                 # This file
+```
+
+## Troubleshooting
+
+### "bedrock_server.exe not found"
+- Make sure you've selected the correct server directory
+- Check that `bedrock_server.exe` exists in that directory
+
+### "No configurations found"
+- Ensure you have `server-*.properties` files in your server directory
+- The app looks for files matching pattern: `server-*.properties`
+- Each file must contain a `level-name=` property
+
+### Password not working
+- Passwords are case-sensitive
+- Check Caps Lock
+- If you forget a password, delete `app_config.json` to reset
+
+## Future Enhancements
+- Update checker for new Bedrock server versions
+- Server console integration
+- Backup/restore configurations
+- Multiple server profile support
+
+## License
+Free to use and modify for personal use.
