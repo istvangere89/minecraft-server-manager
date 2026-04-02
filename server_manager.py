@@ -11,6 +11,9 @@ import threading
 import sys
 from pathlib import Path
 from typing import Dict, List, Tuple, Optional, Callable
+from logger_config import get_logger
+
+logger = get_logger()
 
 
 class ServerManager:
@@ -193,13 +196,27 @@ class ServerManager:
         
         try:
             for line in self.server_process.stdout:
-                if self.output_callback:
-                    self.output_callback(line.rstrip('\n'))
-        except Exception as e:
+                try:
+                    if self.output_callback:
+                        self.output_callback(line.rstrip('\n'))
+                    logger.debug(f"Server output: {line.rstrip('\n')}")
+                except UnicodeDecodeError as e:
+                    logger.error(f"Unicode decode error reading server output: {str(e)}")
+                    if self.output_callback:
+                        self.output_callback(f"[ERROR] Unicode decode error: {str(e)}")
+        except BrokenPipeError:
+            logger.warning("Server process pipe broken - server may have terminated")
+        except IOError as e:
+            logger.error(f"IO error reading server output: {str(e)}")
             if self.output_callback:
-                self.output_callback(f"Error reading output: {str(e)}")
+                self.output_callback(f"[ERROR] IO error: {str(e)}")
+        except Exception as e:
+            logger.error(f"Unexpected error reading server output: {type(e).__name__}: {str(e)}", exc_info=True)
+            if self.output_callback:
+                self.output_callback(f"[ERROR] Unexpected error: {str(e)}")
         finally:
             self.is_running = False
+            logger.info("Server output reader thread terminated")
     
     def stop_server(self) -> Tuple[bool, str]:
         """

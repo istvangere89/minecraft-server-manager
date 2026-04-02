@@ -7,6 +7,9 @@ __pycache__/
 *.pyd
 .Python
 
+# Logs
+msm_logs/
+
 # Build artifacts
 build/
 dist/
