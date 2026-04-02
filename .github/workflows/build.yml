@@ -1,4 +1,4 @@
-name: Build Executable
+name: Test and Build
 
 on:
   push:
@@ -12,9 +12,35 @@ on:
   workflow_dispatch:
 
 jobs:
+  test:
+    name: Test and Lint
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      
+      - name: Check Python syntax
+        run: python -m py_compile *.py ui/*.py
+      
+      - name: Lint with flake8
+        run: flake8 *.py ui/*.py --max-line-length=120 --ignore=E501,W503 || true
+      
+      - name: Run tests
+        run: python -m pytest tests.py -v
+
   build:
     name: Build Windows Executable
     runs-on: windows-latest
+    if: startsWith(github.ref, 'refs/tags/v')
     
     steps:
       - name: Checkout code
@@ -43,7 +69,6 @@ jobs:
           retention-days: 30
       
       - name: Create Release
-        if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
           files: |
