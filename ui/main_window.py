@@ -7,7 +7,8 @@ from PyQt5.QtWidgets import (
     QListWidget, QListWidgetItem, QPushButton, QLabel,
     QMessageBox, QFileDialog, QSplitter
 )
-from PyQt5.QtCore import Qt, QTimer
+from PyQt5.QtCore import Qt, QTimer, QSize
+from PyQt5.QtGui import QFont, QFontMetrics
 
 from config import ConfigManager
 from server_manager import ServerManager
@@ -46,6 +47,7 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(central_widget)
         
         main_layout = QVBoxLayout()
+        main_layout.setContentsMargins(5, 5, 5, 5)
         
         # Title
         title = QLabel("Select a Server Configuration:")
@@ -54,9 +56,10 @@ class MainWindow(QMainWindow):
         # Create splitter for config list and terminal
         splitter = QSplitter(Qt.Horizontal)
         
-        # Left panel: Config list
+        # Left panel: Config list (fixed width ~40 characters)
         left_widget = QWidget()
         left_layout = QVBoxLayout()
+        left_layout.setContentsMargins(0, 0, 0, 0)
         
         self.config_list = QListWidget()
         self.config_list.itemDoubleClicked.connect(self._on_config_selected)
@@ -64,6 +67,7 @@ class MainWindow(QMainWindow):
         
         # Buttons for config management
         button_layout = QHBoxLayout()
+        button_layout.setContentsMargins(0, 5, 0, 0)
         
         refresh_btn = QPushButton("Refresh")
         refresh_btn.clicked.connect(self._load_configs)
@@ -80,16 +84,26 @@ class MainWindow(QMainWindow):
         left_layout.addLayout(button_layout)
         left_widget.setLayout(left_layout)
         
-        # Right panel: Terminal
+        # Set fixed width for left panel (approximately 40 characters wide)
+        # Using QFontMetrics to calculate proper width
+        font = QFont("Courier New", 9)
+        metrics = QFontMetrics(font)
+        char_width = metrics.averageCharWidth()
+        list_width = char_width * 40 + 20  # 40 chars + padding
+        left_widget.setMaximumWidth(int(list_width))
+        
+        # Right panel: Terminal (fills remaining space)
         right_widget = QWidget()
         right_layout = QVBoxLayout()
+        right_layout.setContentsMargins(0, 0, 0, 0)
         
-        # Terminal widget
+        # Terminal widget (should expand to fill height and width)
         self.terminal = TerminalWidget()
-        right_layout.addWidget(self.terminal)
+        right_layout.addWidget(self.terminal, 1)  # Stretch factor 1
         
         # Server control buttons
         control_layout = QHBoxLayout()
+        control_layout.setContentsMargins(0, 5, 0, 0)
         
         start_btn = QPushButton("Start Server")
         start_btn.clicked.connect(self._on_start_server)
@@ -99,16 +113,18 @@ class MainWindow(QMainWindow):
         stop_btn.clicked.connect(self._on_stop_server)
         control_layout.addWidget(stop_btn)
         
+        control_layout.addStretch()
         right_layout.addLayout(control_layout)
         right_widget.setLayout(right_layout)
         
         # Add both to splitter
         splitter.addWidget(left_widget)
         splitter.addWidget(right_widget)
-        splitter.setStretchFactor(0, 1)
+        # Left panel fixed, right panel stretches
+        splitter.setStretchFactor(0, 0)
         splitter.setStretchFactor(1, 1)
         
-        main_layout.addWidget(splitter)
+        main_layout.addWidget(splitter, 1)  # Stretch factor 1 for main splitter
         
         # Status bar
         self.status_label = QLabel("Ready")
