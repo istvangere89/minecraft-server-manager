@@ -194,12 +194,14 @@ class ServerManager:
         if not self.server_process:
             return
         
+        newline_char = '\n'
         try:
             for line in self.server_process.stdout:
                 try:
+                    stripped_line = line.rstrip(newline_char)
                     if self.output_callback:
-                        self.output_callback(line.rstrip('\n'))
-                    logger.debug(f"Server output: {line.rstrip('\n')}")
+                        self.output_callback(stripped_line)
+                    logger.debug(f"Server output: {stripped_line}")
                 except UnicodeDecodeError as e:
                     logger.error(f"Unicode decode error reading server output: {str(e)}")
                     if self.output_callback:
