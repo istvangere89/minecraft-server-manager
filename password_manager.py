@@ -9,10 +9,10 @@ import hashlib
 def hash_password(password: str) -> str:
     """
     Hash a password using SHA256.
-    
+
     Args:
         password: Plain text password to hash
-        
+
     Returns:
         Hexadecimal string representation of the hash
     """
@@ -22,11 +22,11 @@ def hash_password(password: str) -> str:
 def verify_password(password: str, password_hash: str) -> bool:
     """
     Verify a password against a stored hash.
-    
+
     Args:
         password: Plain text password to verify
         password_hash: Stored hash to compare against
-        
+
     Returns:
         True if password matches the hash, False otherwise
     """

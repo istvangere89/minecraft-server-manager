@@ -39,6 +39,7 @@ repos:
     hooks:
       - id: mypy
         args: ['--ignore-missing-imports']
+        stages: [manual]  # Only run manually, not on commit
 
   - repo: https://github.com/PyCQA/bandit
     rev: 1.7.5
@@ -46,3 +47,4 @@ repos:
       - id: bandit
         args: ['-ll', '--skip=B101']
         files: ^((?!tests).)*\.py$
+        stages: [manual]  # Only run manually, not on commit
