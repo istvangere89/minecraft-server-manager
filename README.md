@@ -47,8 +47,50 @@ The hooks will run automatically on `git commit` and check:
 - Code formatting (black)
 - Import organization (isort)
 - Syntax errors
-- Type hints (mypy)
-- Security issues (bandit)
+
+## Code Quality Configuration
+
+All code quality tools use **centralized configuration** for consistency between local development and CI/CD:
+
+### Configuration Files
+
+**`pyproject.toml`** - Main configuration file:
+- `[tool.black]` - Code formatter (120 char line length)
+- `[tool.isort]` - Import organizer (black-compatible profile)
+- `[tool.mypy]` - Type checker (optional, run manually)
+- `[tool.pylint]` - Linter (optional, run manually)
+- `[tool.coverage]` - Test coverage settings
+
+**`.flake8`** - Flake8 linter configuration:
+- `max-line-length = 120`
+- `ignore = E501, W503`
+
+### Running Quality Checks
+
+**Automatic (on commit via pre-commit):**
+```bash
+git commit -m "my changes"  # Runs black, isort, flake8 automatically
+```
+
+**Manual (run all checks):**
+```bash
+pre-commit run --all-files
+```
+
+**Individual tools:**
+```bash
+black *.py ui/*.py          # Auto-format code
+isort *.py ui/*.py          # Organize imports
+flake8 *.py ui/*.py         # Check linting
+```
+
+### CI/CD Workflow
+
+GitHub Actions workflow (`.github/workflows/build.yml`) runs the same quality checks:
+- ✅ **Blocking checks** (fail the build): black, isort, syntax, tests
+- ⚠️ **Advisory checks** (warnings only): flake8
+
+All tools automatically read from centralized configs above.
 
 ### 4. Configure Server Directory
 On first run, the application will prompt you to select your Minecraft Bedrock server directory. Ensure:
