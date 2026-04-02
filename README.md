@@ -16,12 +16,33 @@ Minecraft Server Manager is a Python-based desktop application (Windows) that he
 pip install -r requirements.txt
 ```
 
-### 2. Configure Server Directory
+### 2. Set Up Pre-Commit Hooks (Optional but Recommended)
+Pre-commit hooks run code quality checks before each commit:
+
+```bash
+# Install pre-commit
+pip install pre-commit
+
+# Set up the git hooks
+pre-commit install
+
+# Run checks on all files manually (optional)
+pre-commit run --all-files
+```
+
+The hooks will run automatically on `git commit` and check:
+- Code formatting (black)
+- Import organization (isort)
+- Syntax errors
+- Type hints (mypy)
+- Security issues (bandit)
+
+### 3. Configure Server Directory
 On first run, the application will prompt you to select your Minecraft Bedrock server directory. Ensure:
 - The directory contains `bedrock_server.exe`
 - You have `server-*.properties` files in the directory (e.g., `server-world1.properties`)
 
-### 3. Set Up Your Server Configurations
+### 4. Set Up Your Server Configurations
 Create config files in your server directory:
 ```
 C:\path\to\server\server-world1.properties
