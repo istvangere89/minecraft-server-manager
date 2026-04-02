@@ -1,4 +1,5 @@
 # Ignore application configuration and cache files
+minecraft_server_manager_config.json
 app_config.json
 __pycache__/
 *.pyc

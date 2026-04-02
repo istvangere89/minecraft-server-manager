@@ -58,7 +58,7 @@ class TestConfigManager:
     def test_init_creates_default_config(self):
         """Verify default config is created if none exists."""
         with tempfile.TemporaryDirectory() as tmpdir:
-            config_file = Path(tmpdir) / "app_config.json"
+            config_file = Path(tmpdir) / "minecraft_server_manager_config.json"
             
             # Temporarily override CONFIG_FILE
             original_config_file = ConfigManager.CONFIG_FILE
@@ -74,7 +74,7 @@ class TestConfigManager:
     def test_set_and_get_server_directory(self):
         """Verify setting and getting server directory."""
         with tempfile.TemporaryDirectory() as tmpdir:
-            config_file = Path(tmpdir) / "app_config.json"
+            config_file = Path(tmpdir) / "minecraft_server_manager_config.json"
             ConfigManager.CONFIG_FILE = str(config_file)
             
             original_config_file = ConfigManager.CONFIG_FILE
@@ -92,7 +92,7 @@ class TestConfigManager:
     def test_set_and_get_password_for_config(self):
         """Verify setting and getting password hash for config."""
         with tempfile.TemporaryDirectory() as tmpdir:
-            config_file = Path(tmpdir) / "app_config.json"
+            config_file = Path(tmpdir) / "minecraft_server_manager_config.json"
             ConfigManager.CONFIG_FILE = str(config_file)
             
             original_config_file = ConfigManager.CONFIG_FILE
@@ -112,7 +112,7 @@ class TestConfigManager:
     def test_remove_password_for_config(self):
         """Verify removing password protection."""
         with tempfile.TemporaryDirectory() as tmpdir:
-            config_file = Path(tmpdir) / "app_config.json"
+            config_file = Path(tmpdir) / "minecraft_server_manager_config.json"
             ConfigManager.CONFIG_FILE = str(config_file)
             
             original_config_file = ConfigManager.CONFIG_FILE
@@ -262,7 +262,7 @@ class TestIntegration:
     def test_password_config_workflow(self):
         """Test complete password protection workflow."""
         with tempfile.TemporaryDirectory() as tmpdir:
-            config_file = Path(tmpdir) / "app_config.json"
+            config_file = Path(tmpdir) / "minecraft_server_manager_config.json"
             ConfigManager.CONFIG_FILE = str(config_file)
             
             original_config_file = ConfigManager.CONFIG_FILE

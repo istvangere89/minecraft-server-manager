@@ -68,7 +68,7 @@ Replace `assets/app_icon.ico` with a custom Minecraft-themed icon:
 - The icon will be embedded in the standalone executable
 
 ## Configuration Storage
-App settings are saved in `app_config.json`:
+App settings are saved in `minecraft_server_manager_config.json`:
 - Server directory path
 - Protected config names and password hashes
 
@@ -108,7 +108,7 @@ minecraft-server-manager/
 ### Password not working
 - Passwords are case-sensitive
 - Check Caps Lock
-- If you forget a password, delete `app_config.json` to reset
+- If you forget a password, delete `minecraft_server_manager_config.json` to reset
 
 ## Future Enhancements
 - Update checker for new Bedrock server versions

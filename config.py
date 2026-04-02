@@ -12,7 +12,7 @@ from typing import Dict, Optional
 class ConfigManager:
     """Manages application configuration and password hashes."""
     
-    CONFIG_FILE = "app_config.json"
+    CONFIG_FILE = "minecraft_server_manager_config.json"
     
     def __init__(self):
         """Initialize configuration manager."""

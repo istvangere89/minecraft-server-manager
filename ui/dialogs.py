@@ -2,6 +2,8 @@
 Dialog windows for password management and user interaction.
 """
 
+import os
+from pathlib import Path
 from PyQt5.QtWidgets import (
     QDialog, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit,
     QPushButton, QMessageBox, QComboBox
@@ -187,6 +189,10 @@ class DirectorySelectDialog(QDialog):
         # Path input
         path_layout = QHBoxLayout()
         self.path_input = QLineEdit()
+        # Pre-fill with current working directory (where app is running from)
+        current_dir = str(Path.cwd())
+        self.path_input.setText(current_dir)
+        self.path_input.selectAll()  # Select all text so user can easily replace if needed
         path_layout.addWidget(QLabel("Path:"))
         path_layout.addWidget(self.path_input)
         
