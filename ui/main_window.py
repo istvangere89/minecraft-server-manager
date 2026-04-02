@@ -18,11 +18,11 @@ from PyQt5.QtWidgets import (
     QWidget,
 )
 
-from ..config import ConfigManager
-from ..password_manager import verify_password
-from ..server_manager import ServerManager
-from .dialogs import DirectorySelectDialog, PasswordPromptDialog, PasswordSetupDialog
-from .terminal_widget import TerminalWidget
+from config import ConfigManager
+from password_manager import verify_password
+from server_manager import ServerManager
+from ui.dialogs import DirectorySelectDialog, PasswordPromptDialog, PasswordSetupDialog
+from ui.terminal_widget import TerminalWidget
 
 
 class MainWindow(QMainWindow):

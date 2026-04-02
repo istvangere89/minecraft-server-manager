@@ -6,7 +6,7 @@ from pathlib import Path
 
 from PyQt5.QtWidgets import QDialog, QHBoxLayout, QLabel, QLineEdit, QMessageBox, QPushButton, QVBoxLayout
 
-from ..password_manager import hash_password
+from password_manager import hash_password
 
 
 class PasswordSetupDialog(QDialog):
