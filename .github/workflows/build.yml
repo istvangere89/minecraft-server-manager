@@ -33,7 +33,7 @@ jobs:
         continue-on-error: true
       
       - name: Build executable
-        run: pyinstaller build.spec --onefile --windowed
+        run: pyinstaller build.spec
       
       - name: Upload artifact
         uses: actions/upload-artifact@v4
