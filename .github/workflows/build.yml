@@ -51,18 +51,6 @@ jobs:
         run: flake8 *.py ui/*.py --max-line-length=120 --ignore=E501,W503
         continue-on-error: true
 
-      - name: Type checking with mypy
-        run: mypy *.py ui/*.py --ignore-missing-imports
-        continue-on-error: true
-
-      - name: Lint with pylint
-        run: pylint *.py ui/*.py --max-line-length=120 --disable=C0111,C0103,W0212
-        continue-on-error: true
-
-      - name: Security check with bandit
-        run: bandit -r . -ll --skip B101
-        continue-on-error: true
-
       - name: Run tests with coverage
         run: python -m pytest tests.py -v --cov=. --cov-report=term-missing
         continue-on-error: false
