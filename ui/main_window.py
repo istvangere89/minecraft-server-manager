@@ -249,11 +249,6 @@ class MainWindow(QMainWindow):
                 return
             
             self._update_status(f"Server started with {config_file}")
-            QMessageBox.information(
-                self,
-                "Server Started",
-                f"Server started with configuration: {config_file}\n\n{message}"
-            )
         except Exception as e:
             error_msg = str(e)
             QMessageBox.critical(self, "Error", f"Failed to start server: {error_msg}")
